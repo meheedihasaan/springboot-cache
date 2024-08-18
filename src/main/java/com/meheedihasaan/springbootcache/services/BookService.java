@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,7 +28,7 @@ public class BookService {
         return bookRepository.findAll();
     }
 
-    @Cacheable(cacheNames = "book", key = "#id")
+    @Cacheable(cacheNames = "book", key = "#id", unless = "#result==null")
     public Book getOne(UUID id) {
         log.info("Getting single book from DB");
         return bookRepository.findById(id).orElse(null);
@@ -60,7 +61,7 @@ public class BookService {
         return bookRepository.save(book);
     }
 
-    @CacheEvict(cacheNames = "books", allEntries = true)
+    @Caching(evict = {@CacheEvict(cacheNames = "books", allEntries = true), @CacheEvict(cacheNames = "book", key = "#id")})
     public void delete(UUID id) {
         bookRepository.deleteById(id);
     }
